@@ -67,11 +67,13 @@ jobs:
           command: |
             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
             docker build -t hello_world .
-            docker tag hello_world:latest $ECR_URL/hello_world:latest
+            docker images
+            docker tag hello_world:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY
+            docker images
       - run:
           name: push-docker-image-to-ecr
           command: |
-            docker push $ECR_URL/hello_world:latest
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY
 
   deploy-infrastructure:
     docker:
@@ -174,4 +176,4 @@ workflows:
       # - deploy-infrastructure:
       #     requires: [build-image]
       # - deploy-config
-        # requires: [deploy-infrastructure]
+      # requires: [deploy-infrastructure]
