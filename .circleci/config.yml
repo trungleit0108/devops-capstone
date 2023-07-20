@@ -66,16 +66,15 @@ jobs:
           name: build-docker-image
           command: |
             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-            docker build -t $ECR_REPOSITORY_URL .
+            docker build -t hello-world .
             docker images
-            docker tag $ECR_REPOSITORY_URL:latest $ECR_REPOSITORY_URL
+            docker tag hello-world:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/backend-repository
             docker images
       - run:
           name: push-docker-image-to-ecr
           command: |
             docker images
-            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-            docker push $ECR_REPOSITORY_URL
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/backend-repository
 
   deploy-infrastructure:
     docker:
