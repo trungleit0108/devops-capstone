@@ -39,10 +39,10 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - v1-dependencies-{{ checksum "requirements.txt" }}
-      #       - v1-dependencies-
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: false
@@ -68,16 +68,16 @@ jobs:
             export AWS_PAGER=""
             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
             aws ecr create-repository \
-              --repository-name hello-repository \
+              --repository-name $IMAGE_NAME_DOCKER \
               --image-scanning-configuration scanOnPush=true \
               --region $AWS_DEFAULT_REGION
             docker build -t hello-world .
-            docker tag hello-world:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/hello-repository
+            docker tag hello-world:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME_DOCKER
             docker images
       - run:
           name: push-docker-image-to-ecr
           command: |
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/hello-repository
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME_DOCKER:latest
 
   deploy-infrastructure:
     docker:
@@ -126,7 +126,7 @@ jobs:
             echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
             eksctl create cluster \
             --name k8s-demo \
-            --region us-east-1 \
+            --region $AWS_DEFAULT_REGION \
             --nodegroup-name k8s-demo \
             --nodes 2 \
             --ssh-access \
@@ -135,7 +135,7 @@ jobs:
       - run:
           name: Update kubectl config
           command: |
-            aws eks update-kubeconfig --region us-east-1 --name k8s-demo
+            aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name k8s-demo
 
   deploy-config:
     docker:

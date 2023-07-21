@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/hello_world:latest
+          image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME_DOCKER:latest
           ports:
             - name: web
               containerPort: 80
