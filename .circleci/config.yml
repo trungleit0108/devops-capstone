@@ -134,12 +134,14 @@ jobs:
           command: |
             eksctl create cluster \
             --name k8s-demo \
+            --kubernetes-version 1.25 \
             --region $AWS_DEFAULT_REGION \
             --nodegroup-name k8s-demo \
             --nodes 2 \
             --ssh-access \
             # --ssh-public-key $PUB_KEY_SSH \
-            --instance-type t3.medium
+            --node-type t3.medium
+            --desired-size 2 \
             --managed
       - run:
           name: Update kubectl config
