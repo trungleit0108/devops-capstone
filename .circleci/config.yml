@@ -75,7 +75,7 @@ jobs:
           command: |
             export AWS_PAGER=""
             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-            aws ecr create-repository \
+            aws ecr describe-repositories --repository-names $IMAGE_NAME_DOCKER || aws ecr create-repository \
               --repository-name $IMAGE_NAME_DOCKER \
               --image-scanning-configuration scanOnPush=true \
               --region $AWS_DEFAULT_REGION
