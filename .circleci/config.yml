@@ -55,7 +55,7 @@ jobs:
       - save_cache:
           key: npm-packages-{{ checksum "package-lock.json" }}
           paths:
-            - ~/.npm
+            - ~/repo
 
       - restore_cache:
           key: aws-cli-{{ arch }}
