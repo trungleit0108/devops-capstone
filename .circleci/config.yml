@@ -40,9 +40,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            - v1-dependencies-
+          key: npm-packages-{{ checksum "package-lock.json" }}
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: false
@@ -54,13 +52,23 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
+      - save_cache:
+          key: npm-packages-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
 
+      - restore_cache:
+          key: aws-cli-{{ arch }}
       - run:
           name: Configure AWS CLI
           command: |
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set region $AWS_DEFAULT_REGION
+      - save_cache:
+          key: aws-cli-{{ arch }}
+          paths:
+            - ./aws
 
       - run:
           name: build-docker-image
