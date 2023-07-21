@@ -141,7 +141,8 @@ jobs:
             # --ssh-public-key $PUB_KEY_SSH \
             --node-type t3.medium \
             --desired-size 2 \
-            --managed
+            --managed \
+            --install-neat
       - run:
           name: Update kubectl config
           command: |
