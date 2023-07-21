@@ -39,8 +39,8 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - restore_cache:
-          key: npm-packages-{{ checksum "package-lock.json" }}
+      # - restore_cache:
+      #     key: npm-packages-{{ checksum "package-lock.json" }}
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: false
@@ -52,10 +52,10 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
-      - save_cache:
-          key: npm-packages-{{ checksum "package-lock.json" }}
-          paths:
-            - ~/repo
+      # - save_cache:
+      #     key: npm-packages-{{ checksum "package-lock.json" }}
+      #     paths:
+      #       - ~/.npm
 
       - restore_cache:
           key: aws-cli-{{ arch }}
