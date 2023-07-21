@@ -136,11 +136,11 @@ jobs:
             --name k8s-demo \
             --region $AWS_DEFAULT_REGION \
             --nodegroup-name k8s-demo \
-            --nodes 2 \
+            --nodes 1 \
             --ssh-access \
             # --ssh-public-key $PUB_KEY_SSH \
             --node-type t3.medium \
-            --desired-size 2 \
+            --desired-size 1 \
             --managed \
             --install-neat
       - run:
@@ -182,6 +182,58 @@ jobs:
           resource-file-path: infrastructure/deployment.yaml
           show-kubectl-command: true
 
+  test-app:
+    docker:
+      - image: python:3.11-rc-alpine
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-
+      - run:
+          name: Setup aws cli
+          command: |
+            apk add --update tar gzip nodejs npm curl 
+            pip install awscli
+            aws --version
+      - run:
+          name: Iam authenticator
+          command: |
+            curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
+            chmod +x ./aws-iam-authenticator
+            mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
+            echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+            aws-iam-authenticator help
+      - run:
+          name: Setup eksctl
+          command: |
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            mv /tmp/eksctl /usr/local/bin
+            eksctl --help
+            eksctl version
+      - run:
+          name: Setup kubectl
+          command: |
+            curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.25.9/2023-05-11/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+            echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+            kubectl version --short --client
+      - save_cache:
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          paths:
+            - /usr/local/lib/python3.11/site-packages
+
+      - run:
+          name: Testing pods
+          command: |
+            kubectl get pods
+      - run:
+          name: Testing services
+          command: |
+            kubectl get services
+
 workflows:
   default:
     jobs:
@@ -190,5 +242,9 @@ workflows:
       #     requires: [scan-by-lint]
       # - deploy-infrastructure:
       #     requires: [build-image]
-      - deploy-config
+      # - deploy-config
       # requires: [deploy-infrastructure]
+
+      - deploy-config
+      - test-app:
+          requires: [deploy-config]
